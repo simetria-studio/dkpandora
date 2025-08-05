@@ -164,10 +164,10 @@
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card h-100 product-card">
                     <div class="position-relative">
-                        @if($product->hasImage())
+                        @if($product && $product->hasImage())
                             <img src="{{ $product->image_url }}"
                                  class="card-img-top"
-                                 alt="{{ $product->name }}"
+                                 alt="{{ $product->name ?? 'Produto' }}"
                                  style="height: 200px; object-fit: cover;">
                         @else
                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"

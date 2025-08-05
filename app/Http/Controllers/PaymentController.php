@@ -49,12 +49,21 @@ class PaymentController extends Controller
     {
         $request->validate([
             'payment_method_id' => 'required|string',
+            'payment_intent_id' => 'required|string',
         ]);
 
         try {
+            // Validar dados antes de enviar para o Stripe
+            $paymentIntentId = trim($request->payment_intent_id);
+            $paymentMethodId = trim($request->payment_method_id);
+            
+            if (empty($paymentIntentId) || empty($paymentMethodId)) {
+                throw new \Exception('Dados de pagamento inválidos');
+            }
+
             $paymentIntent = $this->stripeService->confirmPaymentIntent(
-                $request->payment_intent_id,
-                $request->payment_method_id
+                $paymentIntentId,
+                $paymentMethodId
             );
 
             if ($paymentIntent->status === 'succeeded') {
@@ -77,6 +86,56 @@ class PaymentController extends Controller
     }
 
     /**
+     * Processar pagamento PIX
+     */
+    public function processPixPayment(Request $request, Order $order)
+    {
+        // Verificar se o pedido pertence ao usuário logado
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Verificar se o pedido já foi pago
+        if ($order->status === 'paid') {
+            return redirect()->route('orders.show', $order)
+                ->with('warning', 'Este pedido já foi pago.');
+        }
+
+        try {
+            $paymentIntent = $this->stripeService->createPixPaymentIntent($order);
+            $pixData = $this->stripeService->getPixData($paymentIntent->id);
+
+            return view('payments.pix', compact('order', 'paymentIntent', 'pixData'));
+        } catch (\Exception $e) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Erro ao gerar PIX: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Verificar status do PIX
+     */
+    public function checkPixStatus(Request $request, Order $order)
+    {
+        try {
+            $paymentIntentId = $request->input('payment_intent_id');
+            
+            if (empty($paymentIntentId)) {
+                return response()->json(['error' => 'ID do Payment Intent não fornecido'], 400);
+            }
+
+            $paymentIntent = $this->stripeService->retrievePaymentIntent($paymentIntentId);
+            
+            return response()->json([
+                'status' => $paymentIntent->status,
+                'paid' => $paymentIntent->status === 'succeeded',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
      * Webhook do Stripe
      */
     public function webhook(Request $request)
@@ -84,6 +143,19 @@ class PaymentController extends Controller
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
         $endpointSecret = config('services.stripe.webhook_secret');
+
+        // Validar dados do webhook
+        if (empty($payload)) {
+            return response()->json(['error' => 'Payload vazio'], 400);
+        }
+
+        if (empty($signature)) {
+            return response()->json(['error' => 'Assinatura não fornecida'], 400);
+        }
+
+        if (empty($endpointSecret)) {
+            return response()->json(['error' => 'Webhook secret não configurado'], 400);
+        }
 
         try {
             $event = $this->stripeService->processWebhook($payload, $signature, $endpointSecret);
@@ -94,6 +166,10 @@ class PaymentController extends Controller
                     break;
                 case 'payment_intent.payment_failed':
                     $this->handlePaymentFailed($event->data->object);
+                    break;
+                case 'payment_intent.processing':
+                    // PIX pode ficar em processamento por alguns minutos
+                    $this->handlePaymentProcessing($event->data->object);
                     break;
             }
 
@@ -116,6 +192,23 @@ class PaymentController extends Controller
                 $order->update([
                     'status' => 'paid',
                     'transaction_id' => $paymentIntent->id,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Manipular pagamento em processamento
+     */
+    protected function handlePaymentProcessing($paymentIntent)
+    {
+        $orderId = $paymentIntent->metadata->order_id ?? null;
+
+        if ($orderId) {
+            $order = Order::find($orderId);
+            if ($order && $order->status !== 'paid') {
+                $order->update([
+                    'status' => 'processing',
                 ]);
             }
         }

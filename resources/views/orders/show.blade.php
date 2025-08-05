@@ -90,20 +90,40 @@
                     @foreach($order->orderItems as $item)
                         <div class="row align-items-center mb-4 pb-4 border-bottom">
                             <div class="col-md-2">
-                                <img src="{{ $item->product->image ?: 'https://via.placeholder.com/80x80/6a0dad/ffffff?text=' . urlencode($item->product->name) }}"
-                                     class="img-fluid rounded" alt="{{ $item->product->name }}">
+                                @if($item->product && $item->product->image)
+                                    <img src="{{ $item->product->image }}" class="img-fluid rounded" alt="{{ $item->product->name ?? 'Produto' }}">
+                                @elseif($item->product && $item->product->name)
+                                    <img src="https://via.placeholder.com/80x80/6a0dad/ffffff?text={{ urlencode($item->product->name) }}" class="img-fluid rounded" alt="{{ $item->product->name }}">
+                                @elseif($item->product)
+                                    <img src="https://via.placeholder.com/80x80/6a0dad/ffffff?text=Produto" class="img-fluid rounded" alt="Produto">
+                                @else
+                                    <img src="https://via.placeholder.com/80x80/FFD700/000000?text=Gold" class="img-fluid rounded" alt="{{ $item->product_name ?? 'Gold' }}">
+                                @endif
                             </div>
                             <div class="col-md-6">
-                                <h6 class="mb-1">{{ $item->product->name }}</h6>
-                                <p class="text-muted mb-1">{{ Str::limit($item->product->description, 80) }}</p>
-                                <span class="badge badge-{{ $item->product->rarity }}">
-                                    @switch($item->product->rarity)
-                                        @case('common') Comum @break
-                                        @case('rare') Raro @break
-                                        @case('epic') Épico @break
-                                        @case('legendary') Lendário @break
-                                    @endswitch
-                                </span>
+                                <h6 class="mb-1">{{ $item->product_name ?? ($item->product ? $item->product->name : 'Item do Pedido') }}</h6>
+                                <p class="text-muted mb-1">
+                                    @if($item->product && $item->product->description)
+                                        {{ Str::limit($item->product->description, 80) }}
+                                    @else
+                                        {{ Str::limit($item->product_description ?? 'Gold personalizado para Grand Fantasia Violet', 80) }}
+                                    @endif
+                                </p>
+                                @if($item->product && $item->product->rarity)
+                                    <span class="badge badge-{{ $item->product->rarity }}">
+                                        @switch($item->product->rarity)
+                                            @case('common') Comum @break
+                                            @case('rare') Raro @break
+                                            @case('epic') Épico @break
+                                            @case('legendary') Lendário @break
+                                            @default {{ ucfirst($item->product->rarity) }}
+                                        @endswitch
+                                    </span>
+                                @else
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-coins me-1"></i>Gold Personalizado
+                                    </span>
+                                @endif
                             </div>
                             <div class="col-md-2 text-center">
                                 <span class="text-muted">Qtd: {{ $item->quantity }}</span>
@@ -200,11 +220,14 @@
                     </div>
                     <div class="card-body">
                         <p class="small text-muted mb-3">
-                            Seu pedido está aguardando pagamento. Clique no botão abaixo para finalizar.
+                            Seu pedido está aguardando pagamento. Escolha o método de pagamento:
                         </p>
-                        <div class="d-grid">
+                        <div class="d-grid gap-2">
                             <a href="{{ route('payments.process', $order) }}" class="btn btn-primary">
-                                <i class="fas fa-lock me-2"></i>Pagar Agora
+                                <i class="fas fa-credit-card me-2"></i>Cartão de Crédito
+                            </a>
+                            <a href="{{ route('payments.pix', $order) }}" class="btn btn-success">
+                                <i class="fas fa-qrcode me-2"></i>Pagar com PIX
                             </a>
                         </div>
                     </div>

@@ -105,7 +105,14 @@ class OrderController extends Controller
 
         session()->forget('cart');
 
-        return redirect()->route('payments.process', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento.');
+        // Redirecionar baseado no método de pagamento
+        $paymentMethod = $request->input('payment_method', 'credit_card');
+        
+        if ($paymentMethod === 'pix') {
+            return redirect()->route('payments.pix', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento PIX.');
+        } else {
+            return redirect()->route('payments.process', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento.');
+        }
     }
 
     public function show(Order $order)

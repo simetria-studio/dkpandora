@@ -31,6 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('stripe')->group(function () {
         Route::get('/payments/{order}/process', [PaymentController::class, 'processPayment'])->name('payments.process');
         Route::post('/payments/{order}/confirm', [PaymentController::class, 'confirmPayment'])->name('payments.confirm');
+        
+        // Rotas PIX
+        Route::get('/payments/{order}/pix', [PaymentController::class, 'processPixPayment'])->name('payments.pix');
+        Route::post('/payments/{order}/pix/status', [PaymentController::class, 'checkPixStatus'])->name('payments.pix.status');
     });
 });
 

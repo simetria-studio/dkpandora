@@ -19,6 +19,7 @@ DK Pandora é um sistema de e-commerce especializado na venda de itens para jogo
 ### 💳 Sistema de Pagamentos
 - **Integração com Stripe** para processamento seguro
 - Formulário de cartão de crédito com validação em tempo real
+- **Pagamento PIX** com QR Code e código copia e cola
 - Webhooks para atualização automática de status
 - Suporte a múltiplos métodos de pagamento
 
@@ -159,6 +160,7 @@ pandora/
 ### Sistema de Pagamentos
 - ✅ Integração completa com Stripe
 - ✅ Formulário seguro de cartão
+- ✅ **Pagamento PIX** com QR Code
 - ✅ Webhooks para atualização automática
 - ✅ Tratamento de erros
 
@@ -183,6 +185,9 @@ pandora/
 ```bash
 # Testar conexão Stripe
 php artisan stripe:test
+
+# Testar integração PIX
+php artisan test:pix-integration
 
 # Verificar rotas
 php artisan route:list

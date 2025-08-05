@@ -36,7 +36,16 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
    - **Events to send**: 
      - `payment_intent.succeeded`
      - `payment_intent.payment_failed`
+     - `payment_intent.processing`
 4. Copie o **Signing secret** → `STRIPE_WEBHOOK_SECRET`
+
+### 4. Ativar PIX (Opcional)
+
+1. No Dashboard do Stripe, vá para **Settings > Payment methods**
+2. Procure por **PIX** na lista de métodos de pagamento
+3. Clique em **Activate** para habilitar o PIX
+4. Configure as informações necessárias (CNPJ, chave PIX, etc.)
+5. Aguarde a aprovação do Stripe (pode levar alguns dias)
 
 ### 4. Testar a Integração
 
@@ -57,6 +66,7 @@ Use os cartões de teste do Stripe:
 ### ✅ Processamento de Pagamentos
 - Integração completa com Stripe
 - Formulário seguro de cartão de crédito
+- **Pagamento PIX** com QR Code e código copia e cola
 - Validação em tempo real
 - Tratamento de erros
 
@@ -113,6 +123,18 @@ php artisan route:list
 
 # Testar webhook localmente (usando ngrok)
 ngrok http 8000
+
+# Testar integração do Stripe
+php artisan test:stripe-integration
+
+# Testar integração PIX
+php artisan test:pix-integration
+
+# Testar estrutura de pedidos
+php artisan test:order-items
+
+# Testar view de pedidos
+php artisan test:order-view
 ```
 
 ## 🔍 Troubleshooting
@@ -128,6 +150,23 @@ ngrok http 8000
 ### Erro: "Card declined"
 - Use cartões de teste válidos
 - Verifique se o cartão tem saldo suficiente
+
+### Erro: "trim(): Argument #1 ($string) must be of type string, array given"
+- **RESOLVIDO**: Adicionada validação de dados no StripeService
+- Todos os valores enviados para o Stripe são convertidos para string
+- Validação de IDs e parâmetros antes do envio
+
+### Erro: "Amount must be at least R$ 0.50 brl"
+- Valor mínimo para pagamentos no Stripe é R$ 0,50
+- Sistema automaticamente ajusta valores baixos para teste
+- Em produção, configure valores mínimos adequados
+
+### Erro: "The payment method type 'pix' is invalid"
+- **RESOLVIDO**: PIX precisa ser ativado no dashboard do Stripe
+- Vá em **Settings > Payment methods** no Stripe Dashboard
+- Procure por **PIX** e clique em **Activate**
+- Configure as informações necessárias (CNPJ, chave PIX)
+- Aguarde a aprovação do Stripe (pode levar alguns dias)
 
 ## 📞 Suporte
 

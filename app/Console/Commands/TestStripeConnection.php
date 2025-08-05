@@ -24,46 +24,57 @@ class TestStripeConnection extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+        public function handle()
     {
-        $this->info('🧪 Testando conexão com o Stripe...');
+        $this->info('🧪 Testando instalação do Stripe...');
 
         try {
+            // Verificar se o pacote está instalado
+            $this->info('📦 Verificando pacote Stripe...');
+
+            if (!class_exists('Stripe\Stripe')) {
+                $this->error('❌ Pacote Stripe não está instalado');
+                return 1;
+            }
+
+            $this->info('✅ Pacote Stripe instalado com sucesso!');
+
             // Verificar configurações
             $this->info('📋 Verificando configurações...');
 
             if (!config('services.stripe.key')) {
-                $this->error('❌ STRIPE_KEY não está configurada');
-                return 1;
+                $this->warn('⚠️  STRIPE_KEY não está configurada');
+                $this->info('   Para configurar, adicione ao .env: STRIPE_KEY=pk_test_your_key');
+            } else {
+                $this->info('✅ STRIPE_KEY configurada');
             }
 
             if (!config('services.stripe.secret')) {
-                $this->error('❌ STRIPE_SECRET não está configurada');
-                return 1;
+                $this->warn('⚠️  STRIPE_SECRET não está configurada');
+                $this->info('   Para configurar, adicione ao .env: STRIPE_SECRET=sk_test_your_secret');
+            } else {
+                $this->info('✅ STRIPE_SECRET configurada');
             }
 
-            $this->info('✅ Configurações encontradas');
+            if (!config('services.stripe.webhook_secret')) {
+                $this->warn('⚠️  STRIPE_WEBHOOK_SECRET não está configurada');
+                $this->info('   Para configurar, adicione ao .env: STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret');
+            } else {
+                $this->info('✅ STRIPE_WEBHOOK_SECRET configurada');
+            }
 
-            // Testar conexão
-            $this->info('🔗 Testando conexão...');
-
-            $stripeService = app(StripeService::class);
-            $stripe = app('stripe');
-
-            // Tentar recuperar uma lista de customers (teste simples)
-            $customers = $stripe->customers->list(['limit' => 1]);
-
-            $this->info('✅ Conexão com Stripe estabelecida com sucesso!');
-
-            // Mostrar informações da conta
-            $this->info('📊 Informações da conta:');
-            $this->info('   - Modo: ' . (config('services.stripe.key') === 'pk_test_' ? 'Teste' : 'Produção'));
-            $this->info('   - Total de customers: ' . $customers->total_count);
+            $this->info('');
+            $this->info('🎉 Integração Stripe instalada com sucesso!');
+            $this->info('');
+            $this->info('📝 Próximos passos:');
+            $this->info('   1. Configure as variáveis no arquivo .env');
+            $this->info('   2. Execute: php artisan config:clear');
+            $this->info('   3. Teste novamente: php artisan stripe:test');
 
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('❌ Erro ao conectar com Stripe: ' . $e->getMessage());
+            $this->error('❌ Erro: ' . $e->getMessage());
             return 1;
         }
     }

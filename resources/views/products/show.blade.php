@@ -25,7 +25,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card">
                 <div class="position-relative">
-                    <img src="{{ $product->image ?: 'https://via.placeholder.com/600x400/6a0dad/ffffff?text=' . urlencode($product->name) }}" 
+                    <img src="{{ $product->image ?: 'https://via.placeholder.com/600x400/6a0dad/ffffff?text=' . urlencode($product->name ?? 'Produto') }}"
                          class="card-img-top" alt="{{ $product->name }}" style="height: 400px; object-fit: cover;">
                     <div class="position-absolute top-0 end-0 m-3">
                         <span class="badge badge-{{ $product->rarity }} fs-6">
@@ -46,7 +46,7 @@
             <div class="card">
                 <div class="card-body">
                     <h1 class="card-title mb-3">{{ $product->name }}</h1>
-                    
+
                     <div class="mb-4">
                         <span class="price fs-1">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
                     </div>
@@ -96,7 +96,7 @@
                             <div class="row align-items-end">
                                 <div class="col-md-4">
                                     <label for="quantity" class="form-label">Quantidade</label>
-                                    <input type="number" class="form-control" id="quantity" name="quantity" 
+                                    <input type="number" class="form-control" id="quantity" name="quantity"
                                            value="1" min="1" max="{{ $product->stock }}">
                                 </div>
                                 <div class="col-md-8">
@@ -155,12 +155,12 @@
                     ->limit(3)
                     ->get();
             @endphp
-            
+
             @foreach($relatedProducts as $relatedProduct)
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="position-relative">
-                            <img src="{{ $relatedProduct->image ?: 'https://via.placeholder.com/300x200/6a0dad/ffffff?text=' . urlencode($relatedProduct->name) }}" 
+                            <img src="{{ $relatedProduct->image ?: 'https://via.placeholder.com/300x200/6a0dad/ffffff?text=' . urlencode($relatedProduct->name) }}"
                                  class="card-img-top" alt="{{ $relatedProduct->name }}">
                             <div class="position-absolute top-0 end-0 m-2">
                                 <span class="badge badge-{{ $relatedProduct->rarity }}">
@@ -173,17 +173,17 @@
                                 </span>
                             </div>
                         </div>
-                        
+
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ $relatedProduct->name }}</h5>
                             <p class="card-text text-muted flex-grow-1">
                                 {{ Str::limit($relatedProduct->description, 80) }}
                             </p>
-                            
+
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="price">R$ {{ number_format($relatedProduct->price, 2, ',', '.') }}</span>
                             </div>
-                            
+
                             <div class="d-flex gap-2">
                                 <a href="{{ route('products.show', $relatedProduct) }}" class="btn btn-secondary flex-grow-1">
                                     <i class="fas fa-eye me-1"></i>Ver
@@ -202,4 +202,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection
