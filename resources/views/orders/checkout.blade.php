@@ -33,34 +33,17 @@
                             </div>
                         </div>
 
-                        <!-- Payment Method -->
+                        <!-- Payment Information -->
                         <div class="mb-4">
-                            <label class="form-label">
-                                <i class="fas fa-money-bill-wave me-2"></i>Método de Pagamento
-                            </label>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method"
-                                               id="pix" value="pix" {{ old('payment_method') == 'pix' ? 'checked' : '' }} required>
-                                        <label class="form-check-label" for="pix">
-                                            <i class="fas fa-qrcode me-2"></i>PIX
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method"
-                                               id="credit_card" value="credit_card" {{ old('payment_method') == 'credit_card' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="credit_card">
-                                            <i class="fas fa-credit-card me-2"></i>Cartão de Crédito
-                                        </label>
-                                    </div>
-                                </div>
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">
+                                    <i class="fas fa-credit-card me-2"></i>Informações de Pagamento
+                                </h6>
+                                <p class="mb-0 small">
+                                    Após finalizar o pedido, você será redirecionado para a página de pagamento seguro
+                                    onde poderá inserir os dados do seu cartão de crédito.
+                                </p>
                             </div>
-                            @error('payment_method')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <!-- Order Items -->

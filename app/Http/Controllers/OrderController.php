@@ -39,7 +39,6 @@ class OrderController extends Controller
     {
         $request->validate([
             'game_username' => 'required|string|max:255',
-            'payment_method' => 'required|in:pix,credit_card'
         ]);
 
         $cart = session()->get('cart', []);
@@ -74,7 +73,7 @@ class OrderController extends Controller
             'total_amount' => $total,
             'game_username' => $request->game_username,
             'server_name' => 'Grand Fantasia Violet - Principal',
-            'payment_method' => $request->payment_method,
+            'payment_method' => 'stripe',
             'status' => 'pending'
         ]);
 
@@ -106,7 +105,7 @@ class OrderController extends Controller
 
         session()->forget('cart');
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pedido realizado com sucesso!');
+        return redirect()->route('payments.process', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento.');
     }
 
     public function show(Order $order)

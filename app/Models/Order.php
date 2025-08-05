@@ -32,4 +32,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-} 
+
+    public function getFormattedTotalAmountAttribute()
+    {
+        return 'R$ ' . number_format($this->total_amount, 2, ',', '.');
+    }
+}

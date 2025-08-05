@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return redirect()->route('products.index');
@@ -25,7 +26,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Rotas de pagamento
+    Route::middleware('stripe')->group(function () {
+        Route::get('/payments/{order}/process', [PaymentController::class, 'processPayment'])->name('payments.process');
+        Route::post('/payments/{order}/confirm', [PaymentController::class, 'confirmPayment'])->name('payments.confirm');
+    });
 });
+
+// Webhook do Stripe (não requer autenticação)
+Route::post('/webhook/stripe', [PaymentController::class, 'webhook'])->name('webhook.stripe');
 
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';

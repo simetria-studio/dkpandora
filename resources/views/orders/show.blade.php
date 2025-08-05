@@ -61,13 +61,18 @@
                             <h6 class="mb-2">
                                 <i class="fas fa-credit-card me-2"></i>Informações de Pagamento
                             </h6>
-                            <p class="mb-1"><strong>Método:</strong> 
+                            <p class="mb-1"><strong>Método:</strong>
                                 @switch($order->payment_method)
+                                    @case('stripe') Cartão de Crédito (Stripe) @break
                                     @case('pix') PIX @break
                                     @case('credit_card') Cartão de Crédito @break
                                     @case('bank_transfer') Transferência Bancária @break
+                                    @default Cartão de Crédito
                                 @endswitch
                             </p>
+                            @if($order->transaction_id)
+                                <p class="mb-1"><strong>Transação:</strong> {{ $order->transaction_id }}</p>
+                            @endif
                             <p class="mb-1"><strong>Data:</strong> {{ $order->created_at->format('d/m/Y H:i') }}</p>
                         </div>
                     </div>
@@ -85,7 +90,7 @@
                     @foreach($order->orderItems as $item)
                         <div class="row align-items-center mb-4 pb-4 border-bottom">
                             <div class="col-md-2">
-                                <img src="{{ $item->product->image ?: 'https://via.placeholder.com/80x80/6a0dad/ffffff?text=' . urlencode($item->product->name) }}" 
+                                <img src="{{ $item->product->image ?: 'https://via.placeholder.com/80x80/6a0dad/ffffff?text=' . urlencode($item->product->name) }}"
                                      class="img-fluid rounded" alt="{{ $item->product->name }}">
                             </div>
                             <div class="col-md-6">
@@ -111,7 +116,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             <!-- Order Summary -->
             <div class="card mb-4">
@@ -153,7 +158,7 @@
                                 <small class="text-muted">{{ $order->created_at->format('d/m/Y H:i') }}</small>
                             </div>
                         </div>
-                        
+
                         <div class="timeline-item {{ in_array($order->status, ['paid', 'delivered']) ? 'active' : '' }}">
                             <div class="timeline-marker"></div>
                             <div class="timeline-content">
@@ -167,7 +172,7 @@
                                 </small>
                             </div>
                         </div>
-                        
+
                         <div class="timeline-item {{ $order->status == 'delivered' ? 'active' : '' }}">
                             <div class="timeline-marker"></div>
                             <div class="timeline-content">
@@ -184,6 +189,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Payment Action -->
+            @if($order->status === 'pending')
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Ação de Pagamento
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-3">
+                            Seu pedido está aguardando pagamento. Clique no botão abaixo para finalizar.
+                        </p>
+                        <div class="d-grid">
+                            <a href="{{ route('payments.process', $order) }}" class="btn btn-primary">
+                                <i class="fas fa-lock me-2"></i>Pagar Agora
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <!-- Support -->
             <div class="card">
@@ -251,4 +277,4 @@
     font-size: 0.9rem;
 }
 </style>
-@endsection 
+@endsection
