@@ -52,6 +52,10 @@ class PaymentController extends Controller
             'payment_intent_id' => 'required|string',
         ]);
 
+        \Log::info('Confirmando pagamento para o pedido: ' . $order->id);
+        \Log::info('Dados do pedido: ' . json_encode($order));
+        \Log::info('Dados do pagamento: ' . json_encode($request->all()));
+
         try {
             // Sanitizar dados de entrada
             $paymentIntentId = $this->sanitizePaymentData($request->payment_intent_id);
