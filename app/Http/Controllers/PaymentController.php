@@ -54,9 +54,12 @@ class PaymentController extends Controller
 
         try {
             // Validar dados antes de enviar para o Stripe
-            $paymentIntentId = trim($request->payment_intent_id);
-            $paymentMethodId = trim($request->payment_method_id);
-            
+            $paymentIntentId = is_array($request->payment_intent_id) ? $request->payment_intent_id[0] : $request->payment_intent_id;
+            $paymentMethodId = is_array($request->payment_method_id) ? $request->payment_method_id[0] : $request->payment_method_id;
+
+            $paymentIntentId = trim((string) $paymentIntentId);
+            $paymentMethodId = trim((string) $paymentMethodId);
+
             if (empty($paymentIntentId) || empty($paymentMethodId)) {
                 throw new \Exception('Dados de pagamento inválidos');
             }
@@ -119,13 +122,13 @@ class PaymentController extends Controller
     {
         try {
             $paymentIntentId = $request->input('payment_intent_id');
-            
+
             if (empty($paymentIntentId)) {
                 return response()->json(['error' => 'ID do Payment Intent não fornecido'], 400);
             }
 
             $paymentIntent = $this->stripeService->retrievePaymentIntent($paymentIntentId);
-            
+
             return response()->json([
                 'status' => $paymentIntent->status,
                 'paid' => $paymentIntent->status === 'succeeded',
