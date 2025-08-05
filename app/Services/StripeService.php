@@ -53,11 +53,15 @@ class StripeService
     public function confirmPaymentIntent($paymentIntentId, $paymentMethodId)
     {
         try {
+            // Sanitizar dados de entrada
+            $paymentIntentId = $this->sanitizePaymentData($paymentIntentId);
+            $paymentMethodId = $this->sanitizePaymentData($paymentMethodId);
+
             // Validar IDs
             if (empty($paymentIntentId) || !is_string($paymentIntentId)) {
                 throw new \Exception('ID do Payment Intent inválido');
             }
-            
+
             if (empty($paymentMethodId) || !is_string($paymentMethodId)) {
                 throw new \Exception('ID do método de pagamento inválido');
             }
@@ -79,6 +83,9 @@ class StripeService
     public function retrievePaymentIntent($paymentIntentId)
     {
         try {
+            // Sanitizar dados de entrada
+            $paymentIntentId = $this->sanitizePaymentData($paymentIntentId);
+
             // Validar ID
             if (empty($paymentIntentId) || !is_string($paymentIntentId)) {
                 throw new \Exception('ID do Payment Intent inválido');
@@ -143,6 +150,9 @@ class StripeService
     public function confirmPixPaymentIntent($paymentIntentId)
     {
         try {
+            // Sanitizar dados de entrada
+            $paymentIntentId = $this->sanitizePaymentData($paymentIntentId);
+
             // Validar ID
             if (empty($paymentIntentId) || !is_string($paymentIntentId)) {
                 throw new \Exception('ID do Payment Intent inválido');
@@ -164,14 +174,17 @@ class StripeService
     public function getPixData($paymentIntentId)
     {
         try {
+            // Sanitizar dados de entrada
+            $paymentIntentId = $this->sanitizePaymentData($paymentIntentId);
+
             $paymentIntent = $this->retrievePaymentIntent($paymentIntentId);
-            
+
             if (!$paymentIntent || !isset($paymentIntent->next_action)) {
                 throw new \Exception('Dados do PIX não disponíveis');
             }
 
             $pixData = $paymentIntent->next_action->pix_display_qr_code ?? null;
-            
+
             if (!$pixData) {
                 throw new \Exception('QR Code do PIX não disponível');
             }
@@ -196,11 +209,11 @@ class StripeService
             if (empty($payload) || !is_string($payload)) {
                 throw new \Exception('Payload do webhook inválido');
             }
-            
+
             if (empty($signature) || !is_string($signature)) {
                 throw new \Exception('Assinatura do webhook inválida');
             }
-            
+
             if (empty($endpointSecret) || !is_string($endpointSecret)) {
                 throw new \Exception('Secret do webhook inválido');
             }
@@ -215,5 +228,26 @@ class StripeService
         } catch (\Exception $e) {
             throw new \Exception('Erro ao processar webhook: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Sanitizar dados de pagamento
+     */
+    private function sanitizePaymentData($data)
+    {
+        // Se for array, pegar o primeiro elemento
+        if (is_array($data)) {
+            $data = $data[0] ?? '';
+        }
+
+        // Converter para string e aplicar trim
+        $data = trim((string) $data);
+
+        // Validar se não está vazio
+        if (empty($data)) {
+            throw new \Exception('Dados de pagamento inválidos');
+        }
+
+        return $data;
     }
 }

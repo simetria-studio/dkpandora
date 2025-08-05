@@ -53,12 +53,9 @@ class PaymentController extends Controller
         ]);
 
         try {
-            // Validar dados antes de enviar para o Stripe
-            $paymentIntentId = is_array($request->payment_intent_id) ? $request->payment_intent_id[0] : $request->payment_intent_id;
-            $paymentMethodId = is_array($request->payment_method_id) ? $request->payment_method_id[0] : $request->payment_method_id;
-
-            $paymentIntentId = trim((string) $paymentIntentId);
-            $paymentMethodId = trim((string) $paymentMethodId);
+            // Sanitizar dados de entrada
+            $paymentIntentId = $this->sanitizePaymentData($request->payment_intent_id);
+            $paymentMethodId = $this->sanitizePaymentData($request->payment_method_id);
 
             if (empty($paymentIntentId) || empty($paymentMethodId)) {
                 throw new \Exception('Dados de pagamento inválidos');
@@ -86,6 +83,27 @@ class PaymentController extends Controller
             return redirect()->back()
                 ->with('error', 'Erro ao confirmar pagamento: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Sanitizar dados de pagamento
+     */
+    private function sanitizePaymentData($data)
+    {
+        // Se for array, pegar o primeiro elemento
+        if (is_array($data)) {
+            $data = $data[0] ?? '';
+        }
+
+        // Converter para string e aplicar trim
+        $data = trim((string) $data);
+
+        // Validar se não está vazio
+        if (empty($data)) {
+            throw new \Exception('Dados de pagamento inválidos');
+        }
+
+        return $data;
     }
 
     /**
