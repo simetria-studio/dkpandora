@@ -6,7 +6,6 @@ use App\Models\Order;
 use Stripe\StripeClient;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Webhook;
-use Illuminate\Support\Facades\Log;
 
 class StripeService
 {
@@ -26,6 +25,10 @@ class StripeService
             $paymentIntentData = [
                 'amount' => (int) ($order->total_amount * 100), // Stripe usa centavos
                 'currency' => 'brl',
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                    'allow_redirects' => 'never'
+                ],
                 'metadata' => [
                     'order_id' => (string) $order->id,
                     'user_id' => (string) $order->user_id,
@@ -67,33 +70,11 @@ class StripeService
                 throw new \Exception('ID do método de pagamento inválido');
             }
 
-            // Debug: verificar tipos dos dados antes de enviar para Stripe
-            Log::info('StripeService - paymentIntentId type: ' . gettype($paymentIntentId));
-            Log::info('StripeService - paymentIntentId value: ' . json_encode($paymentIntentId));
-            Log::info('StripeService - paymentMethodId type: ' . gettype($paymentMethodId));
-            Log::info('StripeService - paymentMethodId value: ' . json_encode($paymentMethodId));
-
             // Forçar conversão para string e validar
             $paymentIntentId = $this->forceString($paymentIntentId);
             $paymentMethodId = $this->forceString($paymentMethodId);
 
-            // Garantir que os dados sejam strings válidas antes de enviar para Stripe
-            $confirmData = [
-                'id' => $paymentIntentId,
-                'payment_method' => $paymentMethodId,
-            ];
-
-            // Validar que todos os elementos são strings
-            foreach ($confirmData as $key => $value) {
-                if (!is_string($value)) {
-                    Log::error("StripeService - Elemento não é string: {$key} = " . gettype($value) . " - " . json_encode($value));
-                    throw new \Exception("Dados inválidos para Stripe: {$key} não é string");
-                }
-            }
-
-            Log::info('StripeService - confirmData: ' . json_encode($confirmData));
-
-            // Tentar uma abordagem diferente - passar parâmetros separados
+            // Confirmar pagamento com parâmetros separados
             $paymentIntent = $this->stripe->paymentIntents->confirm(
                 $paymentIntentId,
                 ['payment_method' => $paymentMethodId]
@@ -127,7 +108,6 @@ class StripeService
 
             // Validar que é uma string
             if (!is_string($paymentIntentId)) {
-                Log::error("StripeService - ID não é string: " . gettype($paymentIntentId) . " - " . json_encode($paymentIntentId));
                 throw new \Exception("ID inválido para Stripe: não é string");
             }
 
@@ -167,6 +147,10 @@ class StripeService
                 'amount' => (int) ($order->total_amount * 100), // Stripe usa centavos
                 'currency' => 'brl',
                 'payment_method_types' => ['pix'],
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                    'allow_redirects' => 'never'
+                ],
                 'metadata' => [
                     'order_id' => (string) $order->id,
                     'user_id' => (string) $order->user_id,

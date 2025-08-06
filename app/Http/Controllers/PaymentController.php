@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -53,9 +52,7 @@ class PaymentController extends Controller
             'payment_intent_id' => 'required',
         ]);
 
-        Log::info('Confirmando pagamento para o pedido: ' . $order->id);
-        Log::info('Dados do pedido: ' . json_encode($order));
-        Log::info('Dados do pagamento: ' . json_encode($request->all()));
+
 
         try {
             // Obter dados do request de forma mais segura
