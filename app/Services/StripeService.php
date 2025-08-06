@@ -83,9 +83,21 @@ class StripeService
                 'payment_method' => $paymentMethodId,
             ];
 
+            // Validar que todos os elementos são strings
+            foreach ($confirmData as $key => $value) {
+                if (!is_string($value)) {
+                    Log::error("StripeService - Elemento não é string: {$key} = " . gettype($value) . " - " . json_encode($value));
+                    throw new \Exception("Dados inválidos para Stripe: {$key} não é string");
+                }
+            }
+
             Log::info('StripeService - confirmData: ' . json_encode($confirmData));
 
-            $paymentIntent = $this->stripe->paymentIntents->confirm($confirmData);
+            // Tentar uma abordagem diferente - passar parâmetros separados
+            $paymentIntent = $this->stripe->paymentIntents->confirm(
+                $paymentIntentId,
+                ['payment_method' => $paymentMethodId]
+            );
 
             return $paymentIntent;
         } catch (ApiErrorException $e) {
@@ -109,6 +121,15 @@ class StripeService
 
             // Forçar conversão para string
             $paymentIntentId = $this->forceString($paymentIntentId);
+
+            // Garantir que o ID seja uma string válida
+            $paymentIntentId = (string) $paymentIntentId;
+
+            // Validar que é uma string
+            if (!is_string($paymentIntentId)) {
+                Log::error("StripeService - ID não é string: " . gettype($paymentIntentId) . " - " . json_encode($paymentIntentId));
+                throw new \Exception("ID inválido para Stripe: não é string");
+            }
 
             return $this->stripe->paymentIntents->retrieve($paymentIntentId);
         } catch (ApiErrorException $e) {
@@ -181,8 +202,11 @@ class StripeService
             $paymentIntentId = $this->forceString($paymentIntentId);
 
             $confirmData = [
-                'id' => $paymentIntentId,
+                'id' => (string) $paymentIntentId,
             ];
+
+            // Garantir que todos os elementos sejam strings
+            $confirmData = $this->ensureStringArray($confirmData);
 
             $paymentIntent = $this->stripe->paymentIntents->confirm($confirmData);
 
@@ -312,5 +336,26 @@ class StripeService
         }
 
         return $data;
+    }
+
+    /**
+     * Garantir que todos os elementos de um array sejam strings
+     */
+    private function ensureStringArray($data)
+    {
+        if (!is_array($data)) {
+            throw new \Exception('Dados devem ser um array');
+        }
+
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $result[$key] = $this->ensureStringArray($value);
+            } else {
+                $result[$key] = (string) $value;
+            }
+        }
+
+        return $result;
     }
 }
