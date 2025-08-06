@@ -6,6 +6,7 @@ use App\Models\Order;
 use Stripe\StripeClient;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Webhook;
+use Illuminate\Support\Facades\Log;
 
 class StripeService
 {
@@ -66,10 +67,25 @@ class StripeService
                 throw new \Exception('ID do método de pagamento inválido');
             }
 
-            $paymentIntent = $this->stripe->paymentIntents->confirm([
+            // Debug: verificar tipos dos dados antes de enviar para Stripe
+            Log::info('StripeService - paymentIntentId type: ' . gettype($paymentIntentId));
+            Log::info('StripeService - paymentIntentId value: ' . json_encode($paymentIntentId));
+            Log::info('StripeService - paymentMethodId type: ' . gettype($paymentMethodId));
+            Log::info('StripeService - paymentMethodId value: ' . json_encode($paymentMethodId));
+
+            // Forçar conversão para string e validar
+            $paymentIntentId = $this->forceString($paymentIntentId);
+            $paymentMethodId = $this->forceString($paymentMethodId);
+
+            // Garantir que os dados sejam strings válidas antes de enviar para Stripe
+            $confirmData = [
                 'id' => $paymentIntentId,
                 'payment_method' => $paymentMethodId,
-            ]);
+            ];
+
+            Log::info('StripeService - confirmData: ' . json_encode($confirmData));
+
+            $paymentIntent = $this->stripe->paymentIntents->confirm($confirmData);
 
             return $paymentIntent;
         } catch (ApiErrorException $e) {
@@ -90,6 +106,9 @@ class StripeService
             if (empty($paymentIntentId) || !is_string($paymentIntentId)) {
                 throw new \Exception('ID do Payment Intent inválido');
             }
+
+            // Forçar conversão para string
+            $paymentIntentId = $this->forceString($paymentIntentId);
 
             return $this->stripe->paymentIntents->retrieve($paymentIntentId);
         } catch (ApiErrorException $e) {
@@ -158,9 +177,14 @@ class StripeService
                 throw new \Exception('ID do Payment Intent inválido');
             }
 
-            $paymentIntent = $this->stripe->paymentIntents->confirm([
+            // Forçar conversão para string
+            $paymentIntentId = $this->forceString($paymentIntentId);
+
+            $confirmData = [
                 'id' => $paymentIntentId,
-            ]);
+            ];
+
+            $paymentIntent = $this->stripe->paymentIntents->confirm($confirmData);
 
             return $paymentIntent;
         } catch (ApiErrorException $e) {
@@ -240,8 +264,47 @@ class StripeService
             $data = $data[0] ?? '';
         }
 
+        // Se for objeto, tentar converter para string
+        if (is_object($data)) {
+            $data = (string) $data;
+        }
+
         // Converter para string e aplicar trim
         $data = trim((string) $data);
+
+        // Validar se não está vazio
+        if (empty($data)) {
+            throw new \Exception('Dados de pagamento inválidos');
+        }
+
+        // Garantir que é uma string válida
+        if (!is_string($data)) {
+            throw new \Exception('Dados de pagamento devem ser uma string válida');
+        }
+
+        return $data;
+    }
+
+    /**
+     * Forçar conversão para string
+     */
+    private function forceString($data)
+    {
+        // Se for array, pegar o primeiro elemento
+        if (is_array($data)) {
+            $data = $data[0] ?? '';
+        }
+
+        // Se for objeto, tentar converter para string
+        if (is_object($data)) {
+            $data = (string) $data;
+        }
+
+        // Converter para string
+        $data = (string) $data;
+
+        // Aplicar trim
+        $data = trim($data);
 
         // Validar se não está vazio
         if (empty($data)) {

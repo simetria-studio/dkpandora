@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -48,18 +49,22 @@ class PaymentController extends Controller
     public function confirmPayment(Request $request, Order $order)
     {
         $request->validate([
-            'payment_method_id' => 'required|string',
-            'payment_intent_id' => 'required|string',
+            'payment_method_id' => 'required',
+            'payment_intent_id' => 'required',
         ]);
 
-        \Log::info('Confirmando pagamento para o pedido: ' . $order->id);
-        \Log::info('Dados do pedido: ' . json_encode($order));
-        \Log::info('Dados do pagamento: ' . json_encode($request->all()));
+        Log::info('Confirmando pagamento para o pedido: ' . $order->id);
+        Log::info('Dados do pedido: ' . json_encode($order));
+        Log::info('Dados do pagamento: ' . json_encode($request->all()));
 
         try {
+            // Obter dados do request de forma mais segura
+            $paymentIntentId = $request->input('payment_intent_id');
+            $paymentMethodId = $request->input('payment_method_id');
+
             // Sanitizar dados de entrada
-            $paymentIntentId = $this->sanitizePaymentData($request->payment_intent_id);
-            $paymentMethodId = $this->sanitizePaymentData($request->payment_method_id);
+            $paymentIntentId = $this->sanitizePaymentData($paymentIntentId);
+            $paymentMethodId = $this->sanitizePaymentData($paymentMethodId);
 
             if (empty($paymentIntentId) || empty($paymentMethodId)) {
                 throw new \Exception('Dados de pagamento inválidos');
