@@ -147,10 +147,6 @@ class StripeService
                 'amount' => (int) ($order->total_amount * 100), // Stripe usa centavos
                 'currency' => 'brl',
                 'payment_method_types' => ['pix'],
-                'automatic_payment_methods' => [
-                    'enabled' => true,
-                    'allow_redirects' => 'never'
-                ],
                 'metadata' => [
                     'order_id' => (string) $order->id,
                     'user_id' => (string) $order->user_id,
