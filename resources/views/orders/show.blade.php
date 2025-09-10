@@ -63,11 +63,23 @@
                             </h6>
                             <p class="mb-1"><strong>Método:</strong>
                                 @switch($order->payment_method)
-                                    @case('stripe') Cartão de Crédito (Stripe) @break
-                                    @case('pix') PIX @break
-                                    @case('credit_card') Cartão de Crédito @break
-                                    @case('bank_transfer') Transferência Bancária @break
-                                    @default Cartão de Crédito
+                                    @case('stripe') 
+                                        <i class="fab fa-cc-stripe text-primary me-1"></i>Cartão de Crédito (Stripe)
+                                        @break
+                                    @case('paypal') 
+                                        <i class="fab fa-paypal text-info me-1"></i>PayPal
+                                        @break
+                                    @case('pix') 
+                                        <i class="fas fa-qrcode text-success me-1"></i>PIX
+                                        @break
+                                    @case('credit_card') 
+                                        <i class="fas fa-credit-card text-primary me-1"></i>Cartão de Crédito
+                                        @break
+                                    @case('bank_transfer') 
+                                        <i class="fas fa-university text-warning me-1"></i>Transferência Bancária
+                                        @break
+                                    @default 
+                                        <i class="fas fa-credit-card text-primary me-1"></i>Cartão de Crédito
                                 @endswitch
                             </p>
                             @if($order->transaction_id)
@@ -222,13 +234,51 @@
                         <p class="small text-muted mb-3">
                             Seu pedido está aguardando pagamento. Escolha o método de pagamento:
                         </p>
+                        
+                        <!-- Botão principal para seleção de pagamento -->
+                        <div class="d-grid mb-3">
+                            <a href="{{ route('orders.payment', $order) }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Escolher Método de Pagamento
+                            </a>
+                        </div>
+                        
                         <div class="d-grid gap-2">
-                            <a href="{{ route('payments.process', $order) }}" class="btn btn-primary">
-                                <i class="fas fa-credit-card me-2"></i>Cartão de Crédito
-                            </a>
-                            <a href="{{ route('payments.pix', $order) }}" class="btn btn-success">
-                                <i class="fas fa-qrcode me-2"></i>Pagar com PIX
-                            </a>
+                            @if($order->payment_method === 'stripe' || $order->payment_method === 'credit_card')
+                                <a href="{{ route('payments.process', $order) }}" class="btn btn-primary">
+                                    <i class="fab fa-cc-stripe me-2"></i>Pagar com Cartão (Stripe)
+                                </a>
+                            @endif
+                            
+                            @if($order->payment_method === 'paypal')
+                                <a href="{{ route('paypal.process', $order) }}" class="btn btn-info">
+                                    <i class="fab fa-paypal me-2"></i>Pagar com PayPal
+                                </a>
+                            @endif
+                            
+                            @if($order->payment_method === 'pix')
+                                <a href="{{ route('payments.pix', $order) }}" class="btn btn-success">
+                                    <i class="fas fa-qrcode me-2"></i>Pagar com PIX
+                                </a>
+                            @endif
+                            
+                            <!-- Opções alternativas se o usuário quiser mudar o método -->
+                            @if($order->payment_method !== 'stripe' && $order->payment_method !== 'credit_card')
+                                <a href="{{ route('payments.process', $order) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-cc-stripe me-2"></i>Alternar para Cartão
+                                </a>
+                            @endif
+                            
+                            @if($order->payment_method !== 'paypal')
+                                <a href="{{ route('paypal.process', $order) }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-paypal me-2"></i>Alternar para PayPal
+                                </a>
+                            @endif
+                            
+                            @if($order->payment_method !== 'pix')
+                                <a href="{{ route('payments.pix', $order) }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-qrcode me-2"></i>Alternar para PIX
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>

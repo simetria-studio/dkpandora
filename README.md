@@ -18,6 +18,7 @@ DK Pandora é um sistema de e-commerce especializado na venda de itens para jogo
 
 ### 💳 Sistema de Pagamentos
 - **Integração com Stripe** para processamento seguro
+- **Integração com PayPal** para pagamentos internacionais
 - Formulário de cartão de crédito com validação em tempo real
 - **Pagamento PIX** com QR Code e código copia e cola
 - Webhooks para atualização automática de status
@@ -45,7 +46,7 @@ DK Pandora é um sistema de e-commerce especializado na venda de itens para jogo
 
 - **Backend**: Laravel 12
 - **Frontend**: Bootstrap 5, Blade Templates
-- **Pagamentos**: Stripe
+- **Pagamentos**: Stripe, PayPal
 - **Banco de Dados**: MySQL/PostgreSQL
 - **Autenticação**: Laravel Breeze
 
@@ -95,14 +96,20 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 php artisan stripe:test
 ```
 
-6. **Compile os assets**
+6. **Configure o PayPal** (Opcional)
 ```bash
-npm run dev
+# Adicione as variáveis do PayPal no .env
+PAYPAL_CLIENT_ID=your_client_id
+PAYPAL_CLIENT_SECRET=your_client_secret
+PAYPAL_ENVIRONMENT=sandbox
+PAYPAL_WEBHOOK_SECRET=your_webhook_secret
+
+# Veja PAYPAL_SETUP.md para configuração completa
 ```
 
-7. **Inicie o servidor**
+7. **Compile os assets**
 ```bash
-php artisan serve
+npm run dev
 ```
 
 ## 🔧 Configuração do Stripe

@@ -39,6 +39,7 @@ class OrderController extends Controller
     {
         $request->validate([
             'game_username' => 'required|string|max:255',
+            'payment_method' => 'required|in:stripe,paypal,pix',
         ]);
 
         $cart = session()->get('cart', []);
@@ -73,7 +74,7 @@ class OrderController extends Controller
             'total_amount' => $total,
             'game_username' => $request->game_username,
             'server_name' => 'Grand Fantasia Violet - Principal',
-            'payment_method' => 'stripe',
+            'payment_method' => $request->payment_method,
             'status' => 'pending'
         ]);
 
@@ -105,13 +106,22 @@ class OrderController extends Controller
 
         session()->forget('cart');
 
-        // Redirecionar baseado no método de pagamento
-        $paymentMethod = $request->input('payment_method', 'credit_card');
+        // Redirecionar baseado no método de pagamento selecionado
+        $paymentMethod = $request->input('payment_method');
         
-        if ($paymentMethod === 'pix') {
-            return redirect()->route('payments.pix', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento PIX.');
-        } else {
-            return redirect()->route('payments.process', $order)->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento.');
+        switch ($paymentMethod) {
+            case 'paypal':
+                return redirect()->route('paypal.process', $order)
+                    ->with('success', 'Pedido criado! Agora você será redirecionado para o PayPal.');
+            
+            case 'pix':
+                return redirect()->route('payments.pix', $order)
+                    ->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento PIX.');
+            
+            case 'stripe':
+            default:
+                return redirect()->route('payments.process', $order)
+                    ->with('success', 'Pedido criado! Agora você será redirecionado para o pagamento.');
         }
     }
 
@@ -128,5 +138,19 @@ class OrderController extends Controller
     {
         $orders = Auth::user()->orders()->latest()->paginate(10);
         return view('orders.index', compact('orders'));
+    }
+
+    public function paymentSelection(Order $order)
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($order->status !== 'pending') {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Este pedido não pode ser pago.');
+        }
+
+        return view('orders.payment-selection', compact('order'));
     }
 }

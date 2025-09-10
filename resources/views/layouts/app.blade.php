@@ -651,7 +651,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('products.index') }}">
+            <a class="navbar-brand" href="{{ route('home') }}">
                 <i class="fas fa-dragon me-2"></i>DK Pandora
             </a>
 
@@ -661,6 +661,11 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('home') }}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('products.index') }}">
                             <i class="fas fa-store me-1"></i>Loja
@@ -800,5 +805,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     @yield('scripts')
+    @stack('scripts')
 </body>
 </html>

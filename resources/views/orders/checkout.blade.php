@@ -39,22 +39,49 @@
                                 <i class="fas fa-money-bill-wave me-2"></i>Método de Pagamento
                             </label>
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method"
-                                               id="credit_card" value="credit_card" checked>
-                                        <label class="form-check-label" for="credit_card">
-                                            <i class="fas fa-credit-card me-2"></i>Cartão de Crédito
-                                        </label>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card">
+                                        <div class="card-body text-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                       id="stripe" value="stripe" checked>
+                                                <label class="form-check-label" for="stripe">
+                                                    <i class="fab fa-cc-stripe fa-2x text-primary mb-2"></i>
+                                                    <div class="fw-bold">Cartão de Crédito</div>
+                                                    <small class="text-muted">Via Stripe</small>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method"
-                                               id="pix" value="pix">
-                                        <label class="form-check-label" for="pix">
-                                            <i class="fas fa-qrcode me-2"></i>PIX
-                                        </label>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card">
+                                        <div class="card-body text-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                       id="paypal" value="paypal">
+                                                <label class="form-check-label" for="paypal">
+                                                    <i class="fab fa-paypal fa-2x text-info mb-2"></i>
+                                                    <div class="fw-bold">PayPal</div>
+                                                    <small class="text-muted">Pagamento seguro</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card payment-method-card">
+                                        <div class="card-body text-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                       id="pix" value="pix">
+                                                <label class="form-check-label" for="pix">
+                                                    <i class="fas fa-qrcode fa-2x text-success mb-2"></i>
+                                                    <div class="fw-bold">PIX</div>
+                                                    <small class="text-muted">Pagamento instantâneo</small>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -216,4 +243,80 @@
         </div>
     </div>
 </div>
+
+<style>
+.payment-method-card {
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+    cursor: pointer;
+}
+
+.payment-method-card:hover {
+    border-color: #6a0dad;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.payment-method-card .form-check-input:checked + .form-check-label {
+    color: #6a0dad;
+}
+
+.payment-method-card .form-check-input:checked ~ .card-body {
+    background-color: #f8f9fa;
+}
+
+.payment-method-card .form-check-input {
+    display: none;
+}
+
+.payment-method-card .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentCards = document.querySelectorAll('.payment-method-card');
+    const radioInputs = document.querySelectorAll('input[name="payment_method"]');
+
+    paymentCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                
+                // Remove active class from all cards
+                paymentCards.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to selected card
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // Handle radio button changes
+    radioInputs.forEach(radio => {
+        radio.addEventListener('change', function() {
+            paymentCards.forEach(c => c.classList.remove('active'));
+            if (this.checked) {
+                const card = this.closest('.payment-method-card');
+                if (card) {
+                    card.classList.add('active');
+                }
+            }
+        });
+    });
+
+    // Set initial active state
+    const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+    if (checkedRadio) {
+        const card = checkedRadio.closest('.payment-method-card');
+        if (card) {
+            card.classList.add('active');
+        }
+    }
+});
+</script>
 @endsection
