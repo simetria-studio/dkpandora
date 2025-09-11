@@ -319,10 +319,14 @@
                                 <label class="form-label">Raridade</label>
                                 <select name="rarity" class="form-select">
                                     <option value="">Todas</option>
-                                    <option value="common" {{ request('rarity') == 'common' ? 'selected' : '' }}>Comum</option>
-                                    <option value="rare" {{ request('rarity') == 'rare' ? 'selected' : '' }}>Raro</option>
-                                    <option value="epic" {{ request('rarity') == 'epic' ? 'selected' : '' }}>Épico</option>
-                                    <option value="legendary" {{ request('rarity') == 'legendary' ? 'selected' : '' }}>Lendário</option>
+                                    <option value="common" {{ request('rarity') == 'common' ? 'selected' : '' }}>🔘 Cinza</option>
+                                    <option value="uncommon" {{ request('rarity') == 'uncommon' ? 'selected' : '' }}>⚪ Branco</option>
+                                    <option value="rare" {{ request('rarity') == 'rare' ? 'selected' : '' }}>🟢 Verde</option>
+                                    <option value="epic" {{ request('rarity') == 'epic' ? 'selected' : '' }}>🔵 Azul</option>
+                                    <option value="legendary" {{ request('rarity') == 'legendary' ? 'selected' : '' }}>🟠 Laranja</option>
+                                    <option value="mythic" {{ request('rarity') == 'mythic' ? 'selected' : '' }}>🟡 Amarelo</option>
+                                    <option value="divine" {{ request('rarity') == 'divine' ? 'selected' : '' }}>🟣 Roxo</option>
+                                    <option value="transcendent" {{ request('rarity') == 'transcendent' ? 'selected' : '' }}>🔴 Vermelho</option>
                                 </select>
                             </div>
 
@@ -370,13 +374,8 @@
                                             </div>
                                         @endif
                                         <div class="position-absolute top-0 end-0 m-2">
-                                            <span class="badge badge-{{ $product->rarity }}">
-                                                @switch($product->rarity)
-                                                    @case('common') Comum @break
-                                                    @case('rare') Raro @break
-                                                    @case('epic') Épico @break
-                                                    @case('legendary') Lendário @break
-                                                @endswitch
+                                            <span class="badge bg-{{ $product->rarity_color ?? 'secondary' }}">
+                                                {{ $product->rarity_label ?? 'Cinza' }}
                                             </span>
                                         </div>
                                     </div>

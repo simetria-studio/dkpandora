@@ -170,8 +170,8 @@
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <span class="price">R$ {{ number_format($product->price, 2, ',', '.') }}</span>
-                                    <span class="badge badge-{{ $product->rarity ?? 'common' }}">
-                                        {{ ucfirst($product->rarity ?? 'common') }}
+                                    <span class="badge bg-{{ $product->rarity_color ?? 'secondary' }}">
+                                        {{ $product->rarity_label ?? 'Cinza' }}
                                     </span>
                                 </div>
                                 <a href="{{ route('products.show', $product) }}" class="btn btn-primary w-100">

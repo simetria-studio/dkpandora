@@ -69,8 +69,31 @@
                 <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-times me-1"></i>Limpar
                 </a>
+                <button type="button" class="btn btn-outline-info ms-2" onclick="testBulkActions()">
+                    <i class="fas fa-bug me-1"></i>Testar Barra
+                </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Barra de Ações em Lote -->
+<div class="bg-dark border-secondary border-bottom p-3" id="bulk-actions" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <span class="text-light" id="selected-count">0 produtos selecionados</span>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="bulkAction('activate')">
+                <i class="fas fa-check me-1"></i>Ativar
+            </button>
+            <button type="button" class="btn btn-outline-warning btn-sm" onclick="bulkAction('deactivate')">
+                <i class="fas fa-pause me-1"></i>Desativar
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="bulkAction('delete')">
+                <i class="fas fa-trash me-1"></i>Excluir
+            </button>
+        </div>
     </div>
 </div>
 
@@ -78,10 +101,14 @@
 <div class="card">
     <div class="card-body p-0">
         @if($products->count() > 0)
+
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-dark">
                         <tr>
+                            <th class="border-0" style="width: 50px;">
+                                <input type="checkbox" id="select-all" class="form-check-input">
+                            </th>
                             <th class="border-0">Produto</th>
                             <th class="border-0 text-center">Categoria</th>
                             <th class="border-0 text-center">Preço</th>
@@ -93,6 +120,9 @@
                     <tbody>
                         @foreach($products as $product)
                         <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}">
+                            </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="me-3">
@@ -115,7 +145,7 @@
                                         </small>
                                         <div class="mt-1">
                                             @if($product->is_featured)
-                                                <span class="badge bg-warning text-dark me-1">
+                                                <span class="badge bg-warning text-white me-1">
                                                     <i class="fas fa-star me-1"></i>Destaque
                                                 </span>
                                             @endif
@@ -209,4 +239,237 @@
         @endif
     </div>
 </div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Ação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('styles')
+<style>
+    .table tbody tr {
+        background: #1a1a2e !important;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background: #16213e !important;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(106, 13, 173, 0.3) !important;
+    }
+
+    .table tbody td {
+        background: transparent !important;
+        color: #ffffff !important;
+    }
+
+    .table tbody td h6 {
+        color: #ffffff !important;
+    }
+
+    .table tbody td small {
+        color: #a0a0a0 !important;
+    }
+
+    .table tbody td .text-success {
+        color: #28a745 !important;
+    }
+
+    .table tbody td .text-muted {
+        color: #a0a0a0 !important;
+    }
+
+    .table tbody td .fw-bold {
+        color: #ffffff !important;
+    }
+</style>
+@endsection
+
+@section('scripts')
+<script>
+    // Teste de carregamento do script
+    console.log('Script de produtos carregado!');
+
+    // Função de teste para debug (escopo global)
+    function testBulkActions() {
+        console.log('Função testBulkActions chamada!');
+        const bulkActions = document.getElementById('bulk-actions');
+        const selectedCount = document.getElementById('selected-count');
+
+        console.log('=== TESTE DA BARRA DE AÇÕES ===');
+        console.log('Bulk Actions element:', bulkActions);
+        console.log('Selected Count element:', selectedCount);
+
+        if (bulkActions) {
+            console.log('Current display style:', bulkActions.style.display);
+            console.log('Computed display style:', window.getComputedStyle(bulkActions).display);
+
+            // Forçar exibição para teste
+            bulkActions.style.setProperty('display', 'block', 'important');
+            selectedCount.textContent = '3 produtos selecionados (TESTE)';
+
+            setTimeout(() => {
+                bulkActions.style.setProperty('display', 'none', 'important');
+                selectedCount.textContent = '0 produtos selecionados';
+            }, 3000);
+        } else {
+            console.error('Elemento bulk-actions não encontrado!');
+        }
+    }
+
+    // Seleção múltipla
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllCheckbox = document.getElementById('select-all');
+        const productCheckboxes = document.querySelectorAll('.product-checkbox');
+        const bulkActions = document.getElementById('bulk-actions');
+        const selectedCount = document.getElementById('selected-count');
+
+        // Debug: Verificar se os elementos foram encontrados
+        console.log('Select All Checkbox:', selectAllCheckbox);
+        console.log('Product Checkboxes:', productCheckboxes.length);
+        console.log('Bulk Actions:', bulkActions);
+        console.log('Selected Count:', selectedCount);
+
+        // Selecionar/deselecionar todos
+        selectAllCheckbox.addEventListener('change', function() {
+            productCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+
+        // Seleção individual
+        productCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectAllState();
+                updateBulkActions();
+            });
+        });
+
+        function updateSelectAllState() {
+            const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+            selectAllCheckbox.checked = checkedBoxes.length === productCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < productCheckboxes.length;
+        }
+
+        function updateBulkActions() {
+            const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+            const count = checkedBoxes.length;
+
+            console.log('Update Bulk Actions - Checked boxes:', count);
+            console.log('Bulk Actions element:', bulkActions);
+
+            selectedCount.textContent = `${count} produto${count !== 1 ? 's' : ''} selecionado${count !== 1 ? 's' : ''}`;
+
+            if (count > 0) {
+                console.log('Showing bulk actions bar');
+                bulkActions.style.setProperty('display', 'block', 'important');
+            } else {
+                console.log('Hiding bulk actions bar');
+                bulkActions.style.setProperty('display', 'none', 'important');
+            }
+        }
+    });
+
+    // Ações em lote
+    function bulkAction(action) {
+        const checkedBoxes = document.querySelectorAll('.product-checkbox:checked');
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        // Debug: Log dos IDs selecionados
+        console.log('Selected checkboxes:', checkedBoxes.length);
+        console.log('Selected IDs:', selectedIds);
+
+        if (selectedIds.length === 0) {
+            alert('Selecione pelo menos um produto.');
+            return;
+        }
+
+        const actions = {
+            'activate': {
+                message: `Tem certeza que deseja ativar ${selectedIds.length} produto${selectedIds.length !== 1 ? 's' : ''}?`,
+                title: 'Ativar Produtos'
+            },
+            'deactivate': {
+                message: `Tem certeza que deseja desativar ${selectedIds.length} produto${selectedIds.length !== 1 ? 's' : ''}?`,
+                title: 'Desativar Produtos'
+            },
+            'delete': {
+                message: `Tem certeza que deseja excluir ${selectedIds.length} produto${selectedIds.length !== 1 ? 's' : ''}? Esta ação não pode ser desfeita.`,
+                title: 'Excluir Produtos'
+            }
+        };
+
+        showConfirmModal(
+            actions[action].message,
+            () => executeBulkAction(action, selectedIds),
+            actions[action].title
+        );
+    }
+
+    function executeBulkAction(action, selectedIds) {
+        console.log('Executing bulk action:', action, 'with IDs:', selectedIds);
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("admin.products.bulk-action") }}';
+
+        // CSRF Token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+
+        // Action
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = action;
+        form.appendChild(actionInput);
+
+        // Selected IDs
+        selectedIds.forEach((id, index) => {
+            console.log(`Adding product ID ${index + 1}:`, id);
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'product_ids[]';
+            idInput.value = id;
+            form.appendChild(idInput);
+        });
+
+        console.log('Form data before submit:', form);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function showConfirmModal(message, callback, title = 'Confirmar Ação') {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmAction').onclick = callback;
+
+        const modalTitle = document.querySelector('#confirmModal .modal-title');
+        if (modalTitle) {
+            modalTitle.textContent = title;
+        }
+
+        new bootstrap.Modal(document.getElementById('confirmModal')).show();
+    }
+
+</script>
 @endsection

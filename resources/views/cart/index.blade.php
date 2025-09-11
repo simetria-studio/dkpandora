@@ -45,13 +45,8 @@
                                                     <div>
                                                         <h4 class="mb-1 fw-bold name-product">{{ $product->name }}</h4>
                                                         <p class="text-muted mb-1 small">{{ Str::limit($product->description, 50) }}</p>
-                                                        <span class="badge badge-{{ $product->rarity }} badge-sm">
-                                                            @switch($product->rarity)
-                                                                @case('common') Comum @break
-                                                                @case('rare') Raro @break
-                                                                @case('epic') Épico @break
-                                                                @case('legendary') Lendário @break
-                                                            @endswitch
+                                                        <span class="badge bg-{{ $product->rarity_color ?? 'secondary' }} badge-sm">
+                                                            {{ $product->rarity_label ?? 'Cinza' }}
                                                         </span>
                                                     </div>
                                                 </div>

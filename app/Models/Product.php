@@ -65,12 +65,14 @@ class Product extends Model
     public function getRarityLabelAttribute()
     {
         $rarities = [
-            'common' => 'Comum',
-            'uncommon' => 'Incomum',
-            'rare' => 'Raro',
-            'epic' => 'Épico',
-            'legendary' => 'Lendário',
-            'mythic' => 'Mítico'
+            'common' => 'Cinza',
+            'uncommon' => 'Branco',
+            'rare' => 'Verde',
+            'epic' => 'Azul',
+            'legendary' => 'Laranja',
+            'mythic' => 'Amarelo',
+            'divine' => 'Roxo',
+            'transcendent' => 'Vermelho'
         ];
 
         return $rarities[$this->rarity] ?? $this->rarity;
@@ -79,12 +81,14 @@ class Product extends Model
     public function getRarityColorAttribute()
     {
         $colors = [
-            'common' => 'secondary',
-            'uncommon' => 'success',
-            'rare' => 'info',
-            'epic' => 'primary',
-            'legendary' => 'warning',
-            'mythic' => 'danger'
+            'common' => 'secondary',      // Cinza
+            'uncommon' => 'light',        // Branco
+            'rare' => 'success',          // Verde
+            'epic' => 'info',             // Azul
+            'legendary' => 'warning',     // Laranja
+            'mythic' => 'warning',        // Amarelo
+            'divine' => 'primary',        // Roxo
+            'transcendent' => 'danger'    // Vermelho
         ];
 
         return $colors[$this->rarity] ?? 'secondary';

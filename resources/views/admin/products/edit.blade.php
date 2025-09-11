@@ -147,12 +147,14 @@
                                         id="rarity"
                                         name="rarity"
                                         required>
-                                    <option value="common" {{ old('rarity', $product->rarity) == 'common' ? 'selected' : '' }}>Comum</option>
-                                    <option value="uncommon" {{ old('rarity', $product->rarity) == 'uncommon' ? 'selected' : '' }}>Incomum</option>
-                                    <option value="rare" {{ old('rarity', $product->rarity) == 'rare' ? 'selected' : '' }}>Raro</option>
-                                    <option value="epic" {{ old('rarity', $product->rarity) == 'epic' ? 'selected' : '' }}>Épico</option>
-                                    <option value="legendary" {{ old('rarity', $product->rarity) == 'legendary' ? 'selected' : '' }}>Lendário</option>
-                                    <option value="mythic" {{ old('rarity', $product->rarity) == 'mythic' ? 'selected' : '' }}>Mítico</option>
+                                    <option value="common" {{ old('rarity', $product->rarity) == 'common' ? 'selected' : '' }}>🔘 Cinza</option>
+                                    <option value="uncommon" {{ old('rarity', $product->rarity) == 'uncommon' ? 'selected' : '' }}>⚪ Branco</option>
+                                    <option value="rare" {{ old('rarity', $product->rarity) == 'rare' ? 'selected' : '' }}>🟢 Verde</option>
+                                    <option value="epic" {{ old('rarity', $product->rarity) == 'epic' ? 'selected' : '' }}>🔵 Azul</option>
+                                    <option value="legendary" {{ old('rarity', $product->rarity) == 'legendary' ? 'selected' : '' }}>🟠 Laranja</option>
+                                    <option value="mythic" {{ old('rarity', $product->rarity) == 'mythic' ? 'selected' : '' }}>🟡 Amarelo</option>
+                                    <option value="divine" {{ old('rarity', $product->rarity) == 'divine' ? 'selected' : '' }}>🟣 Roxo</option>
+                                    <option value="transcendent" {{ old('rarity', $product->rarity) == 'transcendent' ? 'selected' : '' }}>🔴 Vermelho</option>
                                 </select>
                                 @error('rarity')
                                     <div class="invalid-feedback">{{ $message }}</div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Painel Administrativo - DK Pandora')</title>
 
     <!-- Bootstrap CSS -->
@@ -23,6 +24,12 @@
             --text-muted: #a0a0a0;
             --gradient-primary: linear-gradient(135deg, #6a0dad 0%, #8b5cf6 100%);
             --gradient-secondary: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+
+            /* Sobrescrever variáveis do Bootstrap para tabelas */
+            --bs-table-bg: #1a1a2e;
+            --bs-table-color: #ffffff;
+            --bs-table-hover-bg: rgba(106, 13, 173, 0.3);
+            --bs-table-hover-color: #ffffff;
         }
 
         body {
@@ -163,31 +170,86 @@
             opacity: 0.9;
         }
 
-        /* Tables */
+        /* Tables - Minimalista */
         .table {
-            color: var(--text-light);
-            background: var(--card-bg);
+            color: #ffffff;
+            background: transparent;
+            border: none;
+            margin-bottom: 0;
+        }
+
+        /* Sobrescrever regras específicas do Bootstrap */
+        .table > :not(caption) > * > * {
+            background-color: transparent !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+
+        .table tbody tr:nth-child(even) > * {
+            background-color: transparent !important;
+        }
+
+        .table tbody tr:nth-child(odd) > * {
+            background-color: transparent !important;
         }
 
         .table thead th {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: var(--text-light);
+            background: transparent;
+            color: #a0a0a0;
             border: none;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .table tbody tr {
-            background: var(--card-bg);
-            transition: all 0.3s ease;
+            background: transparent;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .table tbody tr:nth-child(even) {
+            background: transparent;
         }
 
         .table tbody tr:hover {
             background: rgba(106, 13, 173, 0.1);
+            transform: none;
+            box-shadow: none;
         }
 
         .table tbody td {
             border: none;
-            color: var(--text-light);
+            color: #ffffff;
+            padding: 1rem;
+            font-weight: 400;
+            vertical-align: middle;
+            font-size: 0.9rem;
+            text-shadow: none;
+        }
+
+        .table tbody td:first-child {
+            font-weight: 500;
+            color: #00d4ff;
+            font-size: 0.9rem;
+        }
+
+        .table tbody td:nth-child(2) {
+            color: #ffffff;
+            font-weight: 400;
+        }
+
+        .table tbody td:nth-child(3) {
+            color: #28a745;
+            font-weight: 400;
+        }
+
+        .table tbody td:nth-child(5) {
+            color: #a0a0a0;
+            font-size: 0.85rem;
         }
 
         /* Buttons */
@@ -202,6 +264,25 @@
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(106, 13, 173, 0.4);
+        }
+
+        /* Botões de ação na tabela - Minimalista */
+        .btn-sm {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 400;
+            border-radius: 4px;
+            text-transform: none;
+            letter-spacing: 0;
+            box-shadow: none;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-sm:hover {
+            transform: none;
+            box-shadow: none;
+            opacity: 0.8;
         }
 
         .btn-success {
@@ -237,10 +318,68 @@
         }
 
         /* Status Badges */
-        .badge-pending { background: #ffc107; color: #000; }
-        .badge-processing { background: #17a2b8; color: #fff; }
-        .badge-completed { background: #28a745; color: #fff; }
-        .badge-cancelled { background: #dc3545; color: #fff; }
+        .badge-pending {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: #000000;
+            font-weight: 800;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+            border: 2px solid #ffb300;
+        }
+        .badge-processing {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+            border: 2px solid #138496;
+        }
+        .badge-completed {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            border: 2px solid #1e7e34;
+        }
+        .badge-cancelled {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+            border: 2px solid #c82333;
+        }
+
+        /* Badge minimalista */
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            text-transform: none;
+            letter-spacing: 0;
+            display: inline-block;
+            min-width: auto;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -375,6 +514,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
     @yield('scripts')
 </body>

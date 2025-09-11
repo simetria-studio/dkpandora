@@ -130,7 +130,7 @@
                                        value="{{ old('level_requirement', 1) }}"
                                        min="1"
                                        max="200">
-                                <div class="form-text">Deixe em branco se não houver requisito</div>
+                                <div class="form-text text-light">Deixe em branco se não houver requisito</div>
                                 @error('level_requirement')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -146,12 +146,14 @@
                                         id="rarity"
                                         name="rarity"
                                         required>
-                                    <option value="common" {{ old('rarity') == 'common' ? 'selected' : '' }}>Comum</option>
-                                    <option value="uncommon" {{ old('rarity') == 'uncommon' ? 'selected' : '' }}>Incomum</option>
-                                    <option value="rare" {{ old('rarity') == 'rare' ? 'selected' : '' }}>Raro</option>
-                                    <option value="epic" {{ old('rarity') == 'epic' ? 'selected' : '' }}>Épico</option>
-                                    <option value="legendary" {{ old('rarity') == 'legendary' ? 'selected' : '' }}>Lendário</option>
-                                    <option value="mythic" {{ old('rarity') == 'mythic' ? 'selected' : '' }}>Mítico</option>
+                                    <option value="common" {{ old('rarity') == 'common' ? 'selected' : '' }}>🔘 Cinza</option>
+                                    <option value="uncommon" {{ old('rarity') == 'uncommon' ? 'selected' : '' }}>⚪ Branco</option>
+                                    <option value="rare" {{ old('rarity') == 'rare' ? 'selected' : '' }}>🟢 Verde</option>
+                                    <option value="epic" {{ old('rarity') == 'epic' ? 'selected' : '' }}>🔵 Azul</option>
+                                    <option value="legendary" {{ old('rarity') == 'legendary' ? 'selected' : '' }}>🟠 Laranja</option>
+                                    <option value="mythic" {{ old('rarity') == 'mythic' ? 'selected' : '' }}>🟡 Amarelo</option>
+                                    <option value="divine" {{ old('rarity') == 'divine' ? 'selected' : '' }}>🟣 Roxo</option>
+                                    <option value="transcendent" {{ old('rarity') == 'transcendent' ? 'selected' : '' }}>🔴 Vermelho</option>
                                 </select>
                                 @error('rarity')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -169,7 +171,7 @@
                                id="image"
                                name="image"
                                accept="image/*">
-                        <div class="form-text">
+                        <div class="form-text text-light">
                             Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 2MB
                         </div>
                         @error('image')
@@ -186,7 +188,7 @@
                                   name="features"
                                   rows="3"
                                   placeholder="Liste as características especiais do item (opcional)">{{ old('features') }}</textarea>
-                        <div class="form-text">
+                        <div class="form-text text-light">
                             Separe cada característica com vírgula. Ex: +15 de Ataque, +10% Crítico, Resistência ao Fogo
                         </div>
                         @error('features')
@@ -208,7 +210,7 @@
                                         <i class="fas fa-star me-1"></i>Produto em Destaque
                                     </label>
                                 </div>
-                                <div class="form-text">
+                                <div class="form-text text-light">
                                     Produtos em destaque aparecem na seção principal
                                 </div>
                             </div>
@@ -227,7 +229,7 @@
                                         <i class="fas fa-check me-1"></i>Produto Ativo
                                     </label>
                                 </div>
-                                <div class="form-text">
+                                <div class="form-text text-light">
                                     Produtos inativos não aparecem no catálogo
                                 </div>
                             </div>

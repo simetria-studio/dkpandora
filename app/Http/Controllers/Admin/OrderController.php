@@ -13,7 +13,7 @@ class OrderController extends Controller
         $orders = Order::with('user')
             ->latest()
             ->paginate(15);
-        
+
         return view('admin.orders.index', compact('orders'));
     }
 
@@ -44,14 +44,36 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
-        $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled'
-        ]);
+        try {
+            \Log::info('UpdateStatus called', [
+                'order_id' => $order->id,
+                'status' => $request->status,
+                'request_data' => $request->all()
+            ]);
 
-        $order->update(['status' => $request->status]);
+            $request->validate([
+                'status' => 'required|in:pending,paid,delivered,cancelled'
+            ]);
 
-        return redirect()->back()
-            ->with('success', 'Status do pedido atualizado com sucesso!');
+            $order->update(['status' => $request->status]);
+
+            \Log::info('Order status updated successfully', [
+                'order_id' => $order->id,
+                'new_status' => $order->status
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Status do pedido atualizado com sucesso!');
+        } catch (\Exception $e) {
+            \Log::error('Error updating order status', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Erro ao atualizar status: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Order $order)
