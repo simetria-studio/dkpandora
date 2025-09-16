@@ -31,7 +31,7 @@ class PayPalServiceProvider extends ServiceProvider
             $clientBuilder = PaypalServerSdkClientBuilder::init()
                 ->environment($environment)
                 ->clientCredentialsAuthCredentials($authCredentials)
-                ->timeout(30) // Timeout de 30 segundos
+                ->timeout(60) // Aumentar timeout para 60 segundos
                 ->enableRetries(true) // Habilitar retry
                 ->numberOfRetries(3); // 3 tentativas
 

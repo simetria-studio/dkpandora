@@ -49,28 +49,13 @@ class PayPalController extends Controller
                 'order_id' => $order->id
             ]);
 
-            // Tentar primeiro com o serviço direto (mais confiável)
-            try {
-                $paypalOrder = $this->paypalDirectService->createOrder($order);
-                Log::info('PayPal: Pedido criado com sucesso via serviço direto', [
-                    'order_id' => $order->id,
-                    'paypal_order_id' => $paypalOrder['id'] ?? 'N/A',
-                    'paypal_order_status' => $paypalOrder['status'] ?? 'N/A'
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('PayPal: Falha no serviço direto, tentando SDK', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage()
-                ]);
-
-                // Fallback para o SDK original
-                $paypalOrder = $this->paypalService->createOrder($order);
-                Log::info('PayPal: Pedido criado com sucesso via SDK', [
-                    'order_id' => $order->id,
-                    'paypal_order_id' => $paypalOrder->getBody()->id ?? 'N/A',
-                    'paypal_order_status' => $paypalOrder->getBody()->status ?? 'N/A'
-                ]);
-            }
+            // Usar apenas o serviço direto (mais confiável)
+            $paypalOrder = $this->paypalDirectService->createOrder($order);
+            Log::info('PayPal: Pedido criado com sucesso via serviço direto', [
+                'order_id' => $order->id,
+                'paypal_order_id' => $paypalOrder['id'] ?? 'N/A',
+                'paypal_order_status' => $paypalOrder['status'] ?? 'N/A'
+            ]);
 
             // Redirecionar para o PayPal
             $approvalUrl = $this->getApprovalUrl($paypalOrder);
@@ -124,10 +109,19 @@ class PayPalController extends Controller
                 'token' => $token
             ]);
 
-            // Capturar o pagamento usando o serviço direto
-            try {
+            // Verificar o status do pedido PayPal primeiro
+            $paypalOrder = $this->paypalDirectService->getOrder($token);
+            $status = $paypalOrder['status'] ?? 'UNKNOWN';
+
+            Log::info('PayPal: Status do pedido PayPal', [
+                'order_id' => $order->id,
+                'paypal_status' => $status
+            ]);
+
+            if ($status === 'APPROVED') {
+                // Capturar o pagamento se estiver aprovado
                 $captureResult = $this->paypalDirectService->captureOrder($token);
-                Log::info('PayPal: Pagamento capturado com sucesso via serviço direto', [
+                Log::info('PayPal: Pagamento capturado com sucesso', [
                     'order_id' => $order->id,
                     'capture_id' => $captureResult['purchase_units'][0]['payments']['captures'][0]['id'] ?? 'N/A'
                 ]);
@@ -141,29 +135,16 @@ class PayPalController extends Controller
 
                 return redirect()->route('orders.show', $order)
                     ->with('success', 'Pagamento processado com sucesso!');
-
-            } catch (\Exception $e) {
-                Log::warning('PayPal: Falha no serviço direto, tentando SDK', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage()
+            } else {
+                // Se não estiver aprovado, marcar como pendente e aguardar webhook
+                $order->update([
+                    'status' => 'pending',
+                    'payment_method' => 'paypal',
+                    'payment_id' => $token
                 ]);
 
-                // Fallback para o SDK original
-                $captureResult = $this->paypalService->captureOrder($token);
-
-                if ($captureResult->getStatusCode() === 200) {
-                    // Atualizar status do pedido
-                    $order->update([
-                        'status' => 'completed',
-                        'payment_method' => 'paypal',
-                        'payment_id' => $token
-                    ]);
-
-                    return redirect()->route('orders.show', $order)
-                        ->with('success', 'Pagamento processado com sucesso!');
-                } else {
-                    throw new \Exception('Falha ao capturar pagamento');
-                }
+                return redirect()->route('orders.show', $order)
+                    ->with('info', 'Pagamento aprovado! Aguardando confirmação...');
             }
         } catch (\Exception $e) {
             Log::error('Erro ao processar sucesso do pagamento PayPal: ' . $e->getMessage());
@@ -214,64 +195,28 @@ class PayPalController extends Controller
                 'paypal_order' => $paypalOrder ? 'disponível' : 'não disponível'
             ]);
 
-            if (!$paypalOrder) {
-                Log::error('PayPal: Pedido PayPal é null');
+            if (!$paypalOrder || !is_array($paypalOrder)) {
+                Log::error('PayPal: Pedido PayPal é null ou não é array');
                 return null;
             }
 
-            // Verificar se é array (serviço direto) ou objeto (SDK)
-            if (is_array($paypalOrder)) {
-                // Serviço direto
-                $links = $paypalOrder['links'] ?? [];
-                Log::info('PayPal: Links encontrados (serviço direto)', [
-                    'links_count' => count($links),
-                    'links' => $links
+            $links = $paypalOrder['links'] ?? [];
+            Log::info('PayPal: Links encontrados', [
+                'links_count' => count($links),
+                'links' => $links
+            ]);
+
+            foreach ($links as $link) {
+                Log::info('PayPal: Verificando link', [
+                    'rel' => $link['rel'] ?? 'N/A',
+                    'href' => $link['href'] ?? 'N/A'
                 ]);
 
-                foreach ($links as $link) {
-                    Log::info('PayPal: Verificando link (serviço direto)', [
-                        'rel' => $link['rel'] ?? 'N/A',
-                        'href' => $link['href'] ?? 'N/A'
+                if ($link['rel'] === 'approve') {
+                    Log::info('PayPal: URL de aprovação encontrada', [
+                        'href' => $link['href']
                     ]);
-
-                    if ($link['rel'] === 'approve') {
-                        Log::info('PayPal: URL de aprovação encontrada (serviço direto)', [
-                            'href' => $link['href']
-                        ]);
-                        return $link['href'];
-                    }
-                }
-            } else {
-                // SDK original
-                $body = $paypalOrder->getBody();
-                Log::info('PayPal: Corpo da resposta do PayPal (SDK)', [
-                    'body' => $body ? 'disponível' : 'não disponível',
-                    'body_type' => $body ? get_class($body) : 'N/A'
-                ]);
-
-                if (!$body) {
-                    Log::error('PayPal: Corpo da resposta é null (SDK)');
-                    return null;
-                }
-
-                $links = $body->links ?? [];
-                Log::info('PayPal: Links encontrados (SDK)', [
-                    'links_count' => count($links),
-                    'links' => $links
-                ]);
-
-                foreach ($links as $link) {
-                    Log::info('PayPal: Verificando link (SDK)', [
-                        'rel' => $link->rel ?? 'N/A',
-                        'href' => $link->href ?? 'N/A'
-                    ]);
-
-                    if ($link->rel === 'approve') {
-                        Log::info('PayPal: URL de aprovação encontrada (SDK)', [
-                            'href' => $link->href
-                        ]);
-                        return $link->href;
-                    }
+                    return $link['href'];
                 }
             }
 
@@ -280,8 +225,7 @@ class PayPalController extends Controller
         } catch (\Exception $e) {
             Log::error('PayPal: Erro ao extrair URL de aprovação', [
                 'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString(),
-                'paypal_order_type' => $paypalOrder ? get_class($paypalOrder) : 'N/A'
+                'error_trace' => $e->getTraceAsString()
             ]);
             return null;
         }

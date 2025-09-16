@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PayPalController;
+use App\Http\Controllers\RewardController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -42,6 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/paypal/{order}/process', [PayPalController::class, 'processPayment'])->name('paypal.process');
     Route::get('/paypal/{order}/success', [PayPalController::class, 'success'])->name('paypal.success');
     Route::get('/paypal/{order}/cancel', [PayPalController::class, 'cancel'])->name('paypal.cancel');
+
+    // Rotas de recompensas
+    Route::get('/rewards', [RewardController::class, 'index'])->name('rewards.index');
+    Route::post('/rewards/{reward}/redeem', [RewardController::class, 'redeem'])->name('rewards.redeem');
+    Route::get('/rewards/check-eligible', [RewardController::class, 'checkEligibleRewards'])->name('rewards.check-eligible');
 });
 
 // Webhook do Stripe (não requer autenticação)

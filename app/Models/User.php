@@ -52,4 +52,41 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+
+    public function userRewards()
+    {
+        return $this->hasMany(UserReward::class);
+    }
+
+    public function getTotalSpentAttribute()
+    {
+        return $this->orders()
+            ->where('status', 'completed')
+            ->sum('total_amount');
+    }
+
+    public function getAvailableRewards()
+    {
+        $totalSpent = $this->total_spent;
+
+        return Reward::where('is_active', true)
+            ->where('required_amount', '<=', $totalSpent)
+            ->where(function($query) {
+                $query->whereNull('max_redemptions')
+                      ->orWhereRaw('current_redemptions < max_redemptions');
+            })
+            ->whereDoesntHave('userRewards', function($query) {
+                $query->where('user_id', $this->id);
+            })
+            ->orderBy('required_amount', 'asc')
+            ->get();
+    }
+
+    public function getRedeemedRewards()
+    {
+        return $this->userRewards()
+            ->with('reward')
+            ->where('is_redeemed', true)
+            ->get();
+    }
 }

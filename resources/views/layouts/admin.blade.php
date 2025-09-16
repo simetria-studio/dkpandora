@@ -440,6 +440,13 @@
                 </a>
             </div>
 
+            <div class="nav-item">
+                <a href="{{ route('admin.rewards.index') }}" class="nav-link {{ request()->routeIs('admin.rewards.*') ? 'active' : '' }}">
+                    <i class="fas fa-gift"></i>
+                    Recompensas
+                </a>
+            </div>
+
             <hr class="my-3" style="border-color: rgba(106, 13, 173, 0.3);">
 
             <div class="nav-item">

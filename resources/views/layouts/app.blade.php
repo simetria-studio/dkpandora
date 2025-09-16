@@ -681,6 +681,13 @@
                             <i class="fas fa-coins me-1"></i>Gold
                         </a>
                     </li>
+                    @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('rewards.index') }}">
+                            <i class="fas fa-gift me-1"></i>Recompensas
+                        </a>
+                    </li>
+                    @endauth
                 </ul>
 
                 <ul class="navbar-nav">
@@ -710,6 +717,9 @@
                                 @endif
                                 <li><a class="dropdown-item" href="{{ route('orders.index') }}">
                                     <i class="fas fa-list me-2"></i>Meus Pedidos
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('rewards.index') }}">
+                                    <i class="fas fa-gift me-2"></i>Minhas Recompensas
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

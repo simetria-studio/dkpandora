@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\RewardController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
@@ -25,6 +26,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Reports
     Route::get('reports/sales', [DashboardController::class, 'salesReport'])->name('reports.sales');
     Route::get('reports/products', [DashboardController::class, 'productsReport'])->name('reports.products');
+
+    // Rewards Management
+    Route::resource('rewards', RewardController::class);
+    Route::post('rewards/{reward}/toggle-active', [RewardController::class, 'toggleActive'])->name('rewards.toggle-active');
 
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

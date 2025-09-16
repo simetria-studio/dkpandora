@@ -145,6 +145,20 @@ class PayPalDirectService
         try {
             $token = $this->getAccessToken();
 
+            // Primeiro, verificar o status do pedido
+            $orderDetails = $this->getOrder($orderId);
+            $status = $orderDetails['status'] ?? 'UNKNOWN';
+
+            Log::info('PayPal Direct: Status do pedido antes da captura', [
+                'paypal_order_id' => $orderId,
+                'status' => $status
+            ]);
+
+            // Só capturar se o pedido estiver aprovado
+            if ($status !== 'APPROVED') {
+                throw new \Exception("Pedido não está aprovado para captura. Status atual: {$status}");
+            }
+
             $response = Http::withToken($token)
                 ->withOptions([
                     'verify' => false, // Desabilitar verificação SSL para desenvolvimento
@@ -154,7 +168,15 @@ class PayPalDirectService
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json'
                 ])
-                ->post($this->baseUrl . "/v2/checkout/orders/{$orderId}/capture");
+                ->post($this->baseUrl . "/v2/checkout/orders/{$orderId}/capture", [
+                    'payment_source' => [
+                        'paypal' => [
+                            'experience_context' => [
+                                'payment_instruction_preferred' => false
+                            ]
+                        ]
+                    ]
+                ]);
 
             if ($response->successful()) {
                 $data = $response->json();
